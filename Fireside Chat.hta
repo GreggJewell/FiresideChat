@@ -1,0 +1,172 @@
+<!DOCTYPE html lang="en-US">
+<head>
+<!-- VBScript: Resize HTML Application -->
+<script language="VBScript">
+sub ResizeWindow()
+	w = 500
+	h = 329
+	window.ResizeTo w, h
+	window.MoveTo 0, (screen.availHeight - h) ' bottom-left placement
+end sub
+ResizeWindow
+</script>
+<!-- HTML Application Parameters -->
+<HTA:APPLICATION
+	APPLICATIONNAME="Fireside Chat"
+	BORDER="thin"
+	BORDERSTYLE="none"
+	CAPTION="yes"
+	CONTEXTMENU="no"
+	ICON="https://greggjewell.io/firesidechat/logo.ico"
+	ID="FIRESIDE_CHAT"
+	INNERBORDER="no"
+	MAXIMIZEBUTTON="no"
+	MINIMIZEBUTTON="yes"
+	NAVIGABLE="yes"
+	SCROLL="no"
+	SELECTION="yes"
+	SHOWINTASKBAR="yes"
+	SINGLEINSTANCE="no"
+/>
+<!-- Meta Tags -->
+<title>Fireside Chat</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+<!-- External Stylesheet -->
+<link rel="stylesheet" type="text/css" href="https://greggjewell.io/firesidechat/style.css">
+</head>
+<body>
+<div id="toolbar"><div class="toolbar-dropdown"></div></div>
+<div id="chat"></div>
+<div class="message-wrapper">
+	<form id="form-sendMessage" method="post" action="https://greggjewell.io/firesidechat/message.php" target="sendMessage" onsubmit="javascript:return SendMessage();">
+		<input type="hidden" id="sender" name="sender">
+		<input type="hidden" id="recipient" name="recipient">
+		<input type="text" id="message" name="message">
+		<input type="submit" style="display:none">
+	</form>
+</div>
+<iframe id="getChat" name="getChat" application="yes" style="display:none"></iframe>
+<iframe id="sendMessage" name="sendMessage" application="yes" style="display:none"></iframe>
+
+<!-- Javascript: Form Validation and Cleanup When Sending Message -->
+<script language="javascript">
+function SendMessage() {
+	if (document.getElementById('message').value !== '' && document.getElementById('sender').value !== '' && 	document.getElementById('recipient').value !== '') {
+		document.getElementById('form-sendMessage').submit();
+		document.getElementById('message').value='';
+		document.getElementById('message').focus();
+	}
+	return false;
+}
+document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+</script>
+<!-- Javascript: Read the local Power.log file -->
+<script language="javascript">
+// © 2019 Gregg Jewell | Gatekeeper#1310
+
+// For Windows
+try {
+	var wShell = new ActiveXObject("WScript.Shell");
+	var oFSO = new ActiveXObject("Scripting.FileSystemObject");
+	var logConfig = wShell.ExpandEnvironmentStrings("%LocalAppData%") + "\\Blizzard\\Hearthstone\\log.config"
+
+	// Create log.config with Power.log settings only if it doesn't exist
+	oFile = oFSO.CreateTextFile(logConfig, false); // don't overwrite
+	oFile.WriteLine("[Power]");
+	oFile.WriteLine("LogLevel=1");
+	oFile.WriteLine("FilePrinting=True");
+	oFile.WriteLine("ConsolePrinting=False");
+	oFile.WriteLine("ScreenPrinting=False");
+	oFile.WriteLine("Verbose=True");
+	oFile.Close();
+} catch (error) {}
+
+// Read Power.log every 5 seconds
+var url;
+ReadLog();
+function ReadLog() {
+	// Find Power.log
+	//try {
+		if (oFSO.FileExists(wShell.ExpandEnvironmentStrings("%PROGRAMFILES%") + "\\Hearthstone\\Logs\\Power.log")) {
+			logFile = wShell.ExpandEnvironmentStrings("%PROGRAMFILES%") + "\\Hearthstone\\Logs\\Power.log";
+		} else if (oFSO.FileExists(wShell.ExpandEnvironmentStrings("%PROGRAMFILES(x86)%") + "\\Hearthstone\\Logs\\Power.log")) {
+			logFile = wShell.ExpandEnvironmentStrings("%PROGRAMFILES(x86)%") + "\\Hearthstone\\Logs\\Power.log";
+		} else if (oFSO.FileExists("D:\\Battle.net\\Hearthstone\\Logs\\Power.log")) {
+			logFile = "D:\\Battle.net\\Hearthstone\\Logs\\Power.log";
+		} else {
+			alert("Unable to locate your Hearthstone log file.");
+			return false;
+		}
+	//} catch (error) {}
+	
+	// Read Power.log
+	//try {
+		var sender, recipient, p, player, coinPlayer, coinCheck;
+		
+		oFile = oFSO.OpenTextFile(logFile, 1, false);
+		while(!oFile.AtEndOfStream){
+			line = oFile.ReadLine();
+			
+			// Check player with the coin to determine if they're the sender or recipient (opponent)
+			if (line.indexOf('ChoiceType=MULLIGAN CountMin=0 CountMax=5') > -1) {
+				coinPlayer = line.split("Player=")[1].split(" TaskList=")[0];
+				coinCheck = true;
+			}
+			if (line.indexOf('Entities[4]=[entityName=The Coin') > -1 && line.indexOf('zone=HAND zonePos=5 cardId=GAME_005') > -1 && coinCheck == true) {
+				// Me
+				sender = coinPlayer;
+				coinCheck = false;
+			} else if (line.indexOf('Entities[4]=[entityName=The Coin') > -1 && line.indexOf('zone=HAND zonePos=5 cardId=GAME_005') > -1 && coinCheck != true ) {
+				// Opponent
+				recipient = coinPlayer;
+				coinCheck = false;
+			}
+			if (line.indexOf('ChoiceType=MULLIGAN CountMin=0 CountMax=3') > -1 && recipient == coinPlayer) {
+				// Me
+				sender = line.split("Player=")[1].split(" TaskList=")[0];
+			}
+			
+			// Opponents (Recipients)
+			var tag = /[a-zA-Z0-9]#\d{4}/g;
+			if (line.indexOf('TAG_CHANGE Entity=') > -1 && tag.test(line)) {
+				player = line.split("TAG_CHANGE Entity=")[1].split(" ")[0];
+				if (player != sender) { recipient = player; }
+			}
+			
+			//lastTimestamp = line.substr(2,8);
+		}
+		oFile.Close();
+		
+		// Get the age (in minutes) of the log file, ignore it if it's older than 5 minutes	
+		//var today = new Date(); 
+		//var datetime = (today.getMonth()+1) + "/" + today.getDate() + "/" + today.getFullYear() + " " + lastTimestamp.replace(".",":");
+		//var diff = Math.abs(new Date(datetime) - new Date()); // in milliseconds
+		//var age = Math.floor((diff/1000)/60); // in minutes
+		
+	//} catch(error) {}
+	// Send Variables and URL to Chat
+	if ((sender !== '' && sender !== undefined) && (recipient != '' && recipient !== undefined)) {
+		
+		name = recipient.split("#")[0];
+		document.title = "Fireside Chat - " + name
+	
+		document.getElementById("sender").value = sender
+		document.getElementById("recipient").value = recipient
+	
+		url = encodeURI("https://greggjewell.io/firesidechat/chat.php?sender=" + sender + "&recipient=" + recipient);
+		url = url.replace(/#/g, "::");
+		document.getElementById("getChat").src = url + "&t=" + new Date().getTime();
+	}
+	
+	setTimeout(ReadLog, 5000); // 5 second loop
+}
+
+/*
+For Mac (Later)
+log.config: ~/Library/Application Support/Blizzard/Hearthstone
+output_log.txt: /Applications/Hearthstone/Hearthstone.app/Contents/Data/output_log.txt
+*/
+</script>
+</body>
+</html>
