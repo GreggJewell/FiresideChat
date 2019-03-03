@@ -113,25 +113,29 @@ function ReadLog() {
 				coinPlayer = line.split("Player=")[1].split(" TaskList=")[0];
 				coinCheck = true;
 			}
+			
 			if (line.indexOf('Entities[4]=[entityName=The Coin') > -1 && line.indexOf('zone=HAND zonePos=5 cardId=GAME_005') > -1 && coinCheck == true) {
 				// Me
 				sender = coinPlayer;
-				coinCheck = false;
+			} else if (line.indexOf('Entities[4]=[entityName=UNKNOWN ENTITY') > -1 && line.indexOf('zone=HAND zonePos=5') > -1 && coinCheck == true) {
+				// Opponent
+				recipient = coinPlayer;
 			} else if (line.indexOf('Entities[4]=[entityName=The Coin') > -1 && line.indexOf('zone=HAND zonePos=5 cardId=GAME_005') > -1 && coinCheck != true ) {
 				// Opponent
 				recipient = coinPlayer;
-				coinCheck = false;
 			}
-			if (line.indexOf('ChoiceType=MULLIGAN CountMin=0 CountMax=3') > -1 && recipient == coinPlayer) {
+
+			if (line.indexOf('ChoiceType=MULLIGAN CountMin=0 CountMax=3') > -1 && recipient == coinPlayer && coinCheck == true) {
 				// Me
 				sender = line.split("Player=")[1].split(" TaskList=")[0];
 			}
+			if (line.indexOf('ChoiceType=MULLIGAN CountMin=0 CountMax=3') > -1 && coinCheck == true) { coinCheck = false; }
 			
 			// Opponents (Recipients)
 			var tag = /[a-zA-Z0-9]#\d{4}/g;
 			if (line.indexOf('TAG_CHANGE Entity=') > -1 && tag.test(line)) {
 				player = line.split("TAG_CHANGE Entity=")[1].split(" ")[0];
-				if (player != sender) { recipient = player; }
+				if (player != sender && coinCheck == false) { recipient = player; }
 			}
 			
 			//lastTimestamp = line.substr(2,8);
