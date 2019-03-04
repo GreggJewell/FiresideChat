@@ -1,4 +1,4 @@
-# ![Fireside Chat logo](https://i.imgur.com/JdUxWo0.png) Fireside Chat
+# ![Fireside Chat logo](https://i.imgur.com/lWilECE.png) Fireside Chat
 **Fireside Chat: Just Plug Inn**
 
 A lightweight third-party chat application for Hearthstone.
