@@ -1,8 +1,8 @@
 # Fireside Chat
-Fireside Chat: Just Plug Inn
+**Fireside Chat: Just Plug Inn**
 A lightweight third-party chat application for Hearthstone.
 
-Only 1 File to Download. No installation required. No Signup required. No setup required.
+*Only 1 File to Download. No installation required. No Signup required. No setup required.*
 
 How It Works
 
