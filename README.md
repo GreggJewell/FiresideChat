@@ -16,7 +16,7 @@ A lightweight third-party chat application for Hearthstone.
 
 * You can resize the application to any size you want.
 * There is a small menu in the upper-right corner with options to:
-   * Filter/unfilter swear words for all chat rooms.
+   * Filter/unfilter profanity for all chat rooms.
    * Block/unblock your current opponent's messages in the chat room.
    * Copy your current opponent's BattleTag to your clipboard.
 * Player messages are removed from the server after 5 minutes, application messages (that only you can see) are removed after 1 minute.
