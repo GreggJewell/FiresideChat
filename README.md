@@ -1,3 +1,4 @@
+![Fireside Chat logo](https://i.imgur.com/JdUxWo0.png)
 # Fireside Chat
 **Fireside Chat: Just Plug Inn**
 
