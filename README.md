@@ -3,7 +3,7 @@
 
 A lightweight third-party chat application for Hearthstone.
 
-*One file to download. No installation is required. No registration is required. No setup is required. No ads. No logs are stored.*
+*One file to download. No installation is required. No registration is required. No setup is required. No logs are stored.*
 
 **How It Works**
 
